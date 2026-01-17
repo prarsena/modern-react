@@ -1,36 +1,19 @@
-import { useState} from 'react';
-import './App.css'
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { loadTodos } from './thunks/thunks';
+import './styles/App.css'
 import TodoList from './TodoList'
 
 function App() {
-  const [completedTodos, setCompletedTodos] = useState([
-    { text: 'Take garbage out', isCompleted: true},
-    { text: 'Make din din', isCompleted: true},
-  ])
-  const [incompleteTodos, setIncompleteTodos] = useState([
-    { text: 'Paint the house ', isCompleted: false}
-  ])
+  const dispatch = useDispatch();
 
-  function markTodoAsComplete(text){
-    setIncompleteTodos(incompleteTodos.filter(t => t.text !== text));
-    setCompletedTodos([...completedTodos, { ...incompleteTodos.find(t => t.text === text), isCompleted: true}]);
-  }
-  function deleteTodo(text){
-    setCompletedTodos(completedTodos.filter(t => t.text !== text));
-
-  }
-  function createTodo(text){
-    setIncompleteTodos([...incompleteTodos, { text, isCompleted: false }]);
-  }
+  useEffect(() => {
+    dispatch(loadTodos());
+  }, []);
 
   return (
     <>
-      <TodoList 
-        completedTodos={completedTodos} 
-        incompleteTodos={incompleteTodos} 
-        onCompletedClicked={markTodoAsComplete}
-        onDeleteClicked={deleteTodo}
-        onCreateClicked={createTodo} />
+      <TodoList />
     </>
   );
 }
