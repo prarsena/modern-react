@@ -1,58 +1,125 @@
-# React + Vite + Redux 
+# Todo List App
 
-To run:
+A modern React application demonstrating Redux state management, async operations with Redux Thunk, and reusable component patterns. Built with Vite, React, Redux Toolkit, and styled with Tailwind CSS.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or higher recommended)
+- npm
+
+### Installation
 
 ```bash
-npm run dev
+npm install
 ```
+
+### Running the Application
+
+This application requires **two separate processes** to run:
+
+1. **Frontend Development Server** (Vite):
+   ```bash
+   npm run dev
+   ```
+   This starts the Vite development server, typically on `http://localhost:5173`
+
+2. **Backend API Server** (Express):
+   ```bash
+   node server.js
+   ```
+   This starts the Express server on `http://localhost:3000`
+
+**Note:** The frontend (`npm run dev`) does **not** automatically start the backend server. You must run both commands in separate terminal windows.
+
+### Other Available Scripts
+
+- `npm run build` - Build the production bundle
+- `npm run preview` - Preview the production build locally
+- `npm run lint` - Run ESLint to check for code issues
+
+## Project Structure
+
+- `/src` - React components and application code
+  - `/slices` - Redux slice definitions
+  - `/thunks` - Redux thunk functions for async operations
+  - `/selectors` - Redux selector functions
+  - `/tests` - Test files for reducers and selectors
+- `server.js` - Express backend server
+- `vite.config.js` - Vite configuration
+- `tailwind.config.cjs` - Tailwind CSS configuration
 
 ## Branch Configurations
 
-Branch `plain-react` manages state manually using react's useState. 
+- `plain-react` - Manages state manually using React's `useState`
+- `redux` - Uses Redux for centralized state management (current branch)
 
-Branch `redux` uses redux to manage state. 
+## Technology Stack
 
-# Redux
+- **React** - UI library
+- **Vite** - Build tool and dev server
+- **Redux Toolkit** - State management
+- **Redux Thunk** - Async middleware
+- **Tailwind CSS** - Utility-first CSS framework
+- **Express** - Backend API server
 
-Why Redux?
-- State management is difficult when sharing data between components. This leads to "props drilling". 
-- "React Context" can hold and provide entire application global state, which can lead to chaos (bugs, maintainability issues).
-- Global State + Strict Rules = Redux.
+---
 
-## Parts of Redux
-- Redux Store: global state for our app.
-  - Cannot be modified directly. 
-- Redux Actions: components trigger actions when something happens.
-- Reducers: define how the Redux store should change when a specific action happens.
-  - E-comm example: when add-to-cart action happens, new item should appear in user's cart. 
-- Components can only change the state by triggering actions.
+# Redux Concepts
 
-Leads to unidirectional data flow:
-  - A component triggers an action
-  - Reducer determines what changes should be made to the store
-  - Store is updated
-  - Components receive the updated state
 
-## Adding Redux to a react app
+# Redux Concepts
 
-Install packages:
+## Why Redux?
+
+- **State management complexity**: Sharing data between components leads to "props drilling"
+- **React Context limitations**: While it can hold global state, it lacks the structure needed for large applications
+- **Predictable state**: Global State + Strict Rules = Redux
+
+## Core Parts of Redux
+
+### Redux Store
+Global state for the application. Cannot be modified directly - only through dispatching actions.
+
+### Redux Actions
+Events that components trigger when something happens (e.g., user clicks a button).
+
+### Reducers
+Pure functions that define how the store should change when a specific action is dispatched.
+
+**Example**: When an `add-to-cart` action is dispatched, the reducer adds the new item to the user's cart in the store.
+
+## Unidirectional Data Flow
+
+1. A component dispatches an action
+2. Reducer determines what changes should be made to the store
+3. Store is updated
+4. Components receive the updated state via selectors
+
+## Setup Instructions
+
+### Installing Redux
 
 ```bash
 npm install @reduxjs/toolkit react-redux
 ```
 
-In entry-point to the app (main.jsx):
+### Basic Configuration
+
+In your entry point ([main.jsx](src/main.jsx)):
 
 ```js
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 
 const store = configureStore({
-  reducer: {},
+  reducer: {
+    // Add your slice reducers here
+  },
 });
 
-// wrap our components inside our provider, 
-// which allows components to access and modify our store using actions
+// Wrap components with Provider to access the store
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
@@ -62,102 +129,145 @@ createRoot(document.getElementById('root')).render(
 )
 ```
 
-What actions does our app have?
+## This App's Actions
+
 - Create todos
-- Delete todos 
+- Delete todos
 - Mark todos as completed
 
-## Redux Alternatives: Recoil
-- A simplier solution with less 'nouns' (like reducer)
-
-```
-npm install recoil
-```
-
-To add it to your project, use a recoil root.
-
-```js
-//main.jsx
-import { RecoilRoot } from 'recoil';
-
-<Provider store={store}>
-    <RecoilRoot>
-        <App />
-    </RecoilRoot>
-</Provider>
-
-```
-
-```js
-//atoms.js
-import { atom } from 'recoil';
-
-// a single piece of state that any recoil components can access
-export const todos = atom({
-    key: 'todos',
-    default: [{ text: 'Talk about Recoil', isCompleted: false }],
-})
-```
-
-```js
-//todolist.jsx
-import { useRecoilValue } from 'recoil';
-import { todos as todosAtom } from './atoms';
-
-// const todos = useSelector(state => state.todos.value );
-// to read the value
-const todos = useRecoilValue(todosAtom);
-
-// to modify the value
-const [todos, setTodos] = useRecoilState(todosAtom);
-```
-
+---
 
 # Redux Thunk
 
-- Redux manages app state
-- Components manage app UI
-  - ... they also manage data fetching
-- Thunks give us a place to define our app's side effects (data fetching)
+**Purpose**: Provides a place to define side effects (like data fetching) separately from components.
 
-## How does Redux Thunk work?
-- A component dispatches a thunk instead of an action.
-- The logic inside the thunk is executed
-- The thunk can dispatch actions and has read-only access to the store.
-- (Can do same things as components, but give us a separate place to put the logic)
+## How It Works
+
+1. A component dispatches a **thunk** (instead of a plain action)
+2. The thunk logic executes (e.g., API call)
+3. The thunk can dispatch regular actions based on the result
+4. The thunk has read-only access to the store
+
+This separates data-fetching logic from UI components, making both easier to test and maintain.
+
+---
 
 # Redux Selectors
-Why do we need them? The structure of our redux Store can change.
-- state.todos.value -> state.resources.todos.value
-- state.todos.value -> state.todos.completed, state.todos.incomplete
 
-Selectors give us a way to define our info, and send it to components.
+**Why use selectors?** The structure of your Redux store can change over time:
 
-Abstracted away into `src/selectors.js`. 
+- `state.todos.value` → `state.resources.todos.value`
+- `state.todos.value` → `state.todos.completed`, `state.todos.incomplete`
 
-# Styled components 
+**Solution**: Selectors abstract away the store structure, providing a stable interface for components to access state.
 
-Separate styles and style logic from our components.
+Implementation: See [src/selectors/selectors.js](src/selectors/selectors.js)
 
+---
 
-# Testing React Ecosystems
+# Testing
 
-The tools gave us ways to isolate different types of code, which makes our apps easier to test.
+## Testing Reducers and Slices
 
-## Testing reducers
+Redux's modular structure makes testing straightforward. Each reducer can be tested in isolation to verify it modifies state correctly.
 
-You want to be able to test every reducer (every action) -- does every reduce modify the state in the way we want it to? 
+**Example test run**:
 
 ```bash
-$ node src/tests/loadingSlice.test.js
+node src/tests/loadingSlice.test.js
+```
 
+**Output**:
+```
 loadingComplete reducer works.
 ```
 
+See the [src/tests/](src/tests/) directory for examples of:
+- Testing reducer logic ([loadingSlice.test.js](src/tests/loadingSlice.test.js))
+- Testing selector functions ([selectors.test.js](src/tests/selectors.test.js))
 
-# Q
-I've heard there is a cost associated everytime you use one of these: 
+---
 
-- useSelector
-- useState
-- useEffect 
+# Additional Libraries
+
+## Redux Alternatives: Recoil
+
+A simpler state management solution with less boilerplate than Redux.
+
+```bash
+npm install recoil
+```
+
+### Setup
+
+```js
+// main.jsx
+import { RecoilRoot } from 'recoil';
+
+<Provider store={store}>
+  <RecoilRoot>
+    <App />
+  </RecoilRoot>
+</Provider>
+```
+
+### Define State Atoms
+
+```js
+// atoms.js
+import { atom } from 'recoil';
+
+export const todos = atom({
+  key: 'todos',
+  default: [{ text: 'Talk about Recoil', isCompleted: false }],
+})
+```
+
+### Using Atoms in Components
+
+```js
+// TodoList.jsx
+import { useRecoilValue, useRecoilState } from 'recoil';
+import { todos as todosAtom } from './atoms';
+
+// Read-only access
+const todos = useRecoilValue(todosAtom);
+
+// Read and write access
+const [todos, setTodos] = useRecoilState(todosAtom);
+```
+
+## Styled Components
+
+For CSS-in-JS styling with component-scoped styles:
+
+```bash
+npm install styled-components
+```
+
+This separates styles and style logic from component markup, though this project currently uses Tailwind CSS.
+
+---
+
+# FAQ
+
+## What is the cost of React hooks?
+
+**Question**: Is there a performance cost associated with using these hooks?
+- `useSelector`
+- `useState`
+- `useEffect`
+
+**Answer**: Yes, there is a small computational cost, but it's generally negligible:
+
+- **`useSelector`**: Runs every time the Redux store updates. If your selector is expensive, use memoized selectors (with `reselect` or `createSelector` from Redux Toolkit)
+- **`useState`**: Very lightweight. Only triggers re-render when state actually changes
+- **`useEffect`**: Runs after every render (by default). Control when it runs using the dependency array to optimize performance
+
+**Best practices**:
+1. Use the dependency array in `useEffect` to control when it runs
+2. Memoize expensive selectors
+3. Split components to avoid unnecessary re-renders
+4. Use `React.memo()` for expensive components that receive the same props
+
+The cost is minimal for most applications. Only optimize if you measure actual performance issues. 
