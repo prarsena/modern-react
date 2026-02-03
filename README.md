@@ -163,6 +163,35 @@ This separates data-fetching logic from UI components, making both easier to tes
 
 Implementation: See [src/selectors/selectors.js](src/selectors/selectors.js)
 
+## Memoization
+
+**Definition**: Memoization is an optimization technique that caches the result of a function and returns the cached result when the same inputs occur again, avoiding expensive recalculations.
+
+**In Redux**: When you use `useSelector`, it runs every time the store updates. If your selector performs expensive computations (filtering, sorting, transforming large datasets), this can impact performance.
+
+**Solution**: Use `createSelector` from Redux Toolkit to create memoized selectors:
+
+```js
+// Without memoization - recalculates every time
+const selectCompletedTodos = state => 
+  state.todos.filter(todo => todo.isCompleted);
+
+// With memoization - caches result until input changes
+import { createSelector } from '@reduxjs/toolkit';
+
+const selectAllTodos = state => state.todos;
+
+export const selectCompletedTodos = createSelector(
+  [selectAllTodos],
+  todos => todos.filter(todo => todo.isCompleted)
+);
+```
+
+**Benefits**:
+- Expensive calculations only run when input actually changes
+- Prevents unnecessary component re-renders
+- Improves performance in large applications
+
 ---
 
 # Testing
@@ -260,13 +289,13 @@ This separates styles and style logic from component markup, though this project
 
 **Answer**: Yes, there is a small computational cost, but it's generally negligible:
 
-- **`useSelector`**: Runs every time the Redux store updates. If your selector is expensive, use memoized selectors (with `reselect` or `createSelector` from Redux Toolkit)
+- **`useSelector`**: Runs every time the Redux store updates. Optimize with memoized selectors (see [Memoization](#memoization) section) if your selector is expensive
 - **`useState`**: Very lightweight. Only triggers re-render when state actually changes
 - **`useEffect`**: Runs after every render (by default). Control when it runs using the dependency array to optimize performance
 
 **Best practices**:
 1. Use the dependency array in `useEffect` to control when it runs
-2. Memoize expensive selectors
+2. Use `createSelector` for complex selector logic to leverage memoization
 3. Split components to avoid unnecessary re-renders
 4. Use `React.memo()` for expensive components that receive the same props
 
